@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>GIF Search Engine</title>
+    <style>
+      /* CSS styling for the GIF search engine */
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        background-color: #f5f5f5;
+      }
+
+      h1 {
+        text-align: center;
+        margin-bottom: 30px;
+        color: #333;
+      }
+
+      .search-form {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+
+      .search-form input[type="text"] {
+        padding: 10px;
+        width: 300px;
+        font-size: 16px;
+      }
+
+      .search-form button {
+        padding: 10px 20px;
+        font-size: 16px;
+        background-color: #333;
+        color: #fff;
+        border: none;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+
+      .search-form button:hover {
+        background-color: #555;
+      }
+
+      .gif-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+
+      .gif-item {
+        margin: 10px;
+        box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.1);
+        border-radius: 5px;
+        overflow: hidden;
+        transition: transform 0.3s;
+        cursor: pointer;
+      }
+
+      .gif-item:hover {
+        transform: scale(1.05);
+      }
+
+      .gif-item img {
+        width: 100%;
+        height: 100%;
+      }
+
+      #loadMoreContainer {
+        text-align: center;
+        margin-top: 20px;
+      }
+
+      #loadMoreButton {
+        padding: 10px 20px;
+        font-size: 16px;
+        background-color: #333;
+        color: #fff;
+        border: none;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+
+      #loadMoreButton:hover {
+        background-color: #555;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>GIF Search Engine</h1>
+
+    <div class="search-form">
+      <input type="text" id="searchInput" placeholder="Enter search keyword" />
+      <button onclick="searchGifs()">Search</button>
+    </div>
+
+    <div class="gif-container" id="gifContainer"></div>
+
+    <div id="loadMoreContainer">
+      <button
+        id="loadMoreButton"
+        onclick="loadMoreGifs()"
+        style="display: none"
+      >
+        Load More
+      </button>
+    </div>
+
+    <script>
+      const API_KEY = "RPV2uNbNqj46b2GXK5kwrzIGHFsl3JtL";
+      const API_URL = `https://api.giphy.com/v1/gifs/search?api_key=${API_KEY}&limit=12&q=`;
+      let offset = 0;
+
+      // Function to perform a GIF search
+      function searchGifs() {
+        const searchInput = document.getElementById("searchInput");
+        const searchQuery = searchInput.value.trim();
+        if (searchQuery !== "") {
+          offset = 0; // Reset the offset
+          const url = API_URL + encodeURIComponent(searchQuery);
+          fetchGifs(url);
+        }
+      }
+
+      // Function to fetch GIFs from the Giphy API
+      function fetchGifs(url) {
+        const gifContainer = document.getElementById("gifContainer");
+        gifContainer.innerHTML = "Loading...";
+
+        fetch(url)
+          .then((response) => response.json())
+          .then((data) => {
+            gifContainer.innerHTML = "";
+            const gifs = data.data;
+
+            if (gifs.length > 0) {
+              gifs.forEach((gif) => {
+                const gifItem = document.createElement("div");
+                gifItem.className = "gif-item";
+
+                const gifImage = document.createElement("img");
+                gifImage.src = gif.images.fixed_height.url;
+                gifImage.alt = gif.title;
+
+                gifItem.appendChild(gifImage);
+                gifContainer.appendChild(gifItem);
+              });
+
+              // Show the "Load More" button
+              const loadMoreButton = document.getElementById("loadMoreButton");
+              loadMoreButton.style.display = "block";
+
+              // Check if there are more results available
+              if (gifs.length < 12) {
+                loadMoreButton.style.display = "none";
+              }
+            } else {
+              gifContainer.innerHTML = "No GIFs found.";
+            }
+          })
+          .catch((error) => {
+            gifContainer.innerHTML = "An error occurred while fetching GIFs.";
+            console.error(error);
+          });
+      }
+
+      // Function to load more GIFs
+      function loadMoreGifs() {
+        offset += 12;
+        const searchInput = document.getElementById("searchInput");
+        const searchQuery = searchInput.value.trim();
+        if (searchQuery !== "") {
+          const url =
+            API_URL + encodeURIComponent(searchQuery) + `&offset=${offset}`;
+          fetchGifs(url);
+        }
+      }
+    </script>
+  </body>
+</html>
